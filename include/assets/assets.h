@@ -1,3 +1,5 @@
+#ifndef SYM_WIDTH
+
 #include "bar.h"
 #include "seven.h"
 #include "cherry.h"
@@ -7,6 +9,12 @@
 #include "bell.h"
 #include "melon.h"
 
+#include "dice1.h"
+#include "dice2.h"
+#include "dice3.h"
+#include "dice4.h"
+#include "dice5.h"
+#include "dice6.h"
 
 #define SYM_WIDTH 22
 #define SYM_HEIGHT 18
@@ -45,3 +53,17 @@ const int slot_payout[][4] = {
     /* bell (6)   */ {  3,   9, 	 27,	81	 	},
     /* melon (7)  */ {  0,   0, 	 0,		2	 	}
 };
+
+#define DICE_WIDTH 22
+#define DICE_HEIGHT 35
+
+const uint16_t *dice_sides[] = {
+	dice1,
+	dice2,
+	dice3,
+	dice4,
+	dice5,
+	dice6,
+};
+
+#endif // SYM_WIDTH
