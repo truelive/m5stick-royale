@@ -19,3 +19,5 @@ python convertRGP565.py dice4 assets/pixel_art_dice_faces_-_all_sides.png 3 43 3
 python convertRGP565.py dice5 assets/pixel_art_dice_faces_-_all_sides.png 41 43 35 35
 python convertRGP565.py dice6 assets/pixel_art_dice_faces_-_all_sides.png 79 43 35 35
 
+python convertRGP565.py roulette assets/roulette.png 0 0 111 111
+

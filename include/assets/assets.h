@@ -16,6 +16,34 @@
 #include "dice5.h"
 #include "dice6.h"
 
+#include "roulette.h"
+
+const uint16_t roulette_numbers[] = {
+	0,15,4,2,17,6,13,11,8,10,5,16,1,14,9,18,7,12,3
+};
+
+const float roulette_degrees[] = {
+	0.0f,
+	28.41f,
+	47.35f,
+	66.29f,
+	85.23f,
+	104.17f,
+	123.11f,
+	142.05f,
+	160.99f,
+	179.93f,
+	198.87f,
+	217.81f,
+	236.75f,
+	255.69f,
+	274.63f,
+	293.57f,
+	312.51f,
+	331.45f,
+	350.39f
+};
+
 #define SYM_WIDTH 22
 #define SYM_HEIGHT 18
 

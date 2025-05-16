@@ -12,6 +12,7 @@ unsigned long last_draw = 0;
 auto font = &fonts::Font2;
 M5Canvas status_bar(&M5.Display);
 M5Canvas main_canvas(&M5.Display);
+M5Canvas sub_canvas(&main_canvas);
 auto bg_color = 0xfdca;
 
 const int NUM_SYMBOL_TYPES = 8; // Or calculate from slot_symbols array size
@@ -34,6 +35,9 @@ void setup()
   status_bar.setFont(font);
 
   main_canvas.createSprite(M5.Display.width(), M5.Display.height() - font->height);
+  sub_canvas.createSprite(111,111);
+  sub_canvas.fillSprite(TFT_PINK);
+  sub_canvas.pushImage(0, 0, 111, 111, roulette, TFT_WHITE);
 
   // In your setup() function:
   SlotMachine::Parameters params = {
@@ -57,12 +61,15 @@ void loop()
   {
     return;
   }
+  //count++;
   M5.update();
   last_draw = tick;
   mySlotMachine->update(M5.BtnA.wasPressed(), M5.BtnB.wasPressed(), M5.BtnC.wasPressed()); // Update animation logic
   draw_status_bar(mySlotMachine->get_balance(), mySlotMachine->get_last_payout());
   main_canvas.fillRect(0, 0, main_canvas.width(), main_canvas.height(), bg_color); // Example clear
   mySlotMachine->draw(main_canvas, 0, 0, TFT_WHITE);                               // Draw the slot machine at top-left of main_canvas
+  //sub_canvas.pushRotateZoom(count*0.8f, 1.0f, 1.0f, TFT_PINK);
+
 
   M5.Display.startWrite();
   status_bar.pushSprite(0, 0);
