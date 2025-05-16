@@ -70,13 +70,17 @@ private:
     bool column_is_stopping_animation[GRID_WIDTH];   // True if column is in the "slowing down" phase of stopping
     int column_spin_update_counter[GRID_WIDTH];      // Counter to control spin speed
     int column_target_symbols[GRID_WIDTH][GRID_HEIGHT]; // Symbols to land on for each column
+    int column_win_color[GRID_WIDTH][GRID_HEIGHT]; // Background color for winning combinations
     int column_stop_animation_progress[GRID_WIDTH];  // Counter for the duration of the stopping animation
     bool is_payout_calculated_flag;
+    int animation_win_highlight_update_counter;
+    bool animation_win_highlight_update_flip;
 
 
     // Animation parameters
     static const int SPIN_SPEED_PIXELS_PER_UPDATE = 14; // Pixels to scroll per update() call
     static const int STOPPING_ANIMATION_DURATION_UPDATES = 45; // How many update() calls the "stopping" phase lasts before snapping
+    static const int UPDATES_PER_WIN_HIGLIGHT = 30;
 
     void initialize_grid_randomly(); // Sets initial random symbols on the grid
     void set_column_to_final_state(int col_index, const int final_symbols[GRID_HEIGHT]); // Helper to set a column to its target symbols

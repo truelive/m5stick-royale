@@ -38,10 +38,10 @@ const int slot_payout[][4] = {
     // Symbol Index | 5 times | 7 times | 9 times | 10 times
     /* bar (0)    */ {  3,   15, 	 100,	1000	},
     /* seven (1)  */ {  100, 400, 	 40000,	100000	}, // 'seven' usually has high payouts
-    /* cherry (2) */ {  0,   1, 	 2,		2		},
-    /* orange (3) */ {  0,   1, 	 2,		2		},
-    /* cocos (4)  */ {  0,   1, 	 2,		2		},
-    /* pear (5)   */ {  0,   1, 	 2,		2		},
-    /* bell (6)   */ {  3,   3, 	 3,		3	 	},
+    /* cherry (2) */ {  0,   1, 	 2,		3		},
+    /* orange (3) */ {  0,   1, 	 2,		3		},
+    /* cocos (4)  */ {  0,   1, 	 2,		3		},
+    /* pear (5)   */ {  0,   1, 	 2,		3		},
+    /* bell (6)   */ {  3,   9, 	 27,	81	 	},
     /* melon (7)  */ {  0,   0, 	 0,		2	 	}
 };

@@ -10,6 +10,8 @@ SlotMachine::SlotMachine(const uint16_t** symbol_pixel_data, const uint16_t* sym
       symbol_tile_width(sym_w),
       symbol_tile_height(sym_h) {
     initialize_grid_randomly();
+    animation_win_highlight_update_counter = 0;
+    animation_win_highlight_update_flip = false;
     for (int i = 0; i < GRID_WIDTH; ++i) {
         column_vertical_offset[i] = 0;
         column_is_actively_spinning[i] = false;
@@ -32,12 +34,20 @@ void SlotMachine::initialize_grid_randomly() {
         for (int buffer_idx = 0; buffer_idx <= GRID_HEIGHT; ++buffer_idx) {
             // current_reel_symbols[col][0] is above the grid, [1] is top row, etc.
             current_reel_symbols[col][buffer_idx].symbol_index = select_weighted_symbol();
+            if (buffer_idx < GRID_HEIGHT) {
+                column_win_color[col][buffer_idx] = 0;
+            }
         }
     }
 }
 
 void SlotMachine::spin_all_columns() {
     is_payout_calculated_flag = false; // Reset the flag
+    for (int col = 0; col < GRID_WIDTH; ++col) {
+        for(int row = 0; row < GRID_HEIGHT; ++row) {
+            column_win_color[col][row] = 0;
+        }
+    }
     for (int col = 0; col < GRID_WIDTH; ++col) {
         spin_column(col);
     }
@@ -102,6 +112,10 @@ void SlotMachine::set_column_to_final_state(int col_index, const int final_symbo
 }
 
 void SlotMachine::update() {
+    animation_win_highlight_update_counter = (animation_win_highlight_update_counter + 1) % UPDATES_PER_WIN_HIGLIGHT;
+    if (animation_win_highlight_update_counter == 0) {
+        animation_win_highlight_update_flip = !animation_win_highlight_update_flip;
+    }
     for (int col = 0; col < GRID_WIDTH; ++col) {
         if (column_is_actively_spinning[col]) {
             column_vertical_offset[col] += SPIN_SPEED_PIXELS_PER_UPDATE;
@@ -138,6 +152,19 @@ void SlotMachine::draw(M5Canvas& canvas, int top_left_x, int top_left_y, uint16_
             int symbol_idx = current_reel_symbols[col][buffer_idx].symbol_index;
             // Ensure symbol_idx is valid before trying to access symbols_data_ptr
             if (symbol_idx >= 0 && symbol_idx < num_symbol_types_count && symbols_data_ptr[symbol_idx] != nullptr) {
+                if (buffer_idx != 0 && column_win_color[col][buffer_idx-1] != 0) {
+                    auto hl_color = TFT_SKYBLUE;
+                    if (animation_win_highlight_update_flip) {
+                        hl_color = TFT_DARKCYAN;
+                    }
+                    canvas.fillRect(
+                        base_screen_x,
+                        top_left_y + (buffer_idx - 1) * symbol_tile_height + column_vertical_offset[col],
+                        symbol_tile_width,
+                        symbol_tile_height,
+                        hl_color
+                    );
+                }
                 canvas.pushImage(
                     base_screen_x,
                     // current_reel_symbols[col][0] is above the grid, [1] is top row, etc.
@@ -244,6 +271,7 @@ int SlotMachine::calculate_payout() {
         for (int row_in_grid = 0; row_in_grid < GRID_HEIGHT; ++row_in_grid) {
             // The symbol in the visible grid at [col][row_in_grid] is current_reel_symbols[col][row_in_grid + 1]
             int symbol_index = current_reel_symbols[col][row_in_grid + 1].symbol_index;
+            column_win_color[col][row_in_grid] = 0;
             if (symbol_index >= 0 && symbol_index < num_symbol_types_count) {
                 symbol_counts[symbol_index]++;
             }
@@ -251,17 +279,34 @@ int SlotMachine::calculate_payout() {
     }
 
     int total_payout = 0;
+    int total_wins = 0;
+    int symbol_wins[num_symbol_types_count];
+    for (int i = 0; i < num_symbol_types_count; ++i) {
+        symbol_wins[i] = 0;
+    }
+
     for (int symbol_idx = 0; symbol_idx < num_symbol_types_count; ++symbol_idx) {
         int count = symbol_counts[symbol_idx];
         if (count <= 4) continue; // No payout for 4 or fewer symbols
 
         for (int i = 3; i >= 0; --i) { // Check against PAYOUT_RELEVANT_COUNTS {5, 7, 9, 10}
-            if (count >= slot_payout_counts[i]) {
+            if (count >= slot_payout_counts[i] && slot_payout[symbol_idx][i] > 0) {
+                total_wins++;
+                symbol_wins[symbol_idx] = total_wins;
                 total_payout += slot_payout[symbol_idx][i];
                 break; // Found the payout for this symbol and count, move to next symbol
             }
         }
     }
+
+    for (int col = 0; col < GRID_WIDTH; ++col) {
+        for (int row_in_grid = 0; row_in_grid < GRID_HEIGHT; ++row_in_grid) {
+            // The symbol in the visible grid at [col][row_in_grid] is current_reel_symbols[col][row_in_grid + 1]
+            int symbol_index = current_reel_symbols[col][row_in_grid + 1].symbol_index;
+            column_win_color[col][row_in_grid] = symbol_wins[symbol_index];
+        }
+    }
+
     is_payout_calculated_flag = true;
     return total_payout;
 }
