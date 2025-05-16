@@ -18,8 +18,23 @@ public:
     // num_types: Number of different symbols (e.g., 8).
     // sym_w: Width of a single symbol image (e.g., SYM_WIDTH).
     // sym_h: Height of a single symbol image (e.g., SYM_HEIGHT).
+    struct Parameters {
+        const uint16_t** symbol_pixel_data;
+        const uint16_t* symbol_weight_data;
+        const int* slot_payout_counts;
+        const int (*slot_payout)[4];
+        int num_types;
+        int sym_w;
+        int sym_h;
+    };
+
+    SlotMachine(const Parameters& params);
     SlotMachine(const uint16_t** symbol_pixel_data, const uint16_t* symbol_weight_data, const int* slot_payout_counts, const int (*slot_payout)[4],  int num_types, int sym_w, int sym_h);
     ~SlotMachine();
+    // New constructor using a struct for parameters
+    
+
+    
 
     void spin_all_columns(); // Starts spinning all columns
     void spin_column(int col_index); // Starts spinning a specific column
@@ -34,7 +49,8 @@ public:
     // Generates a weighted random result for all columns and then initiates stopping.
     void stop_all_columns_with_weighted_random_result();
 
-    void update(); // Call this every frame to update animation states
+    void update_controls(bool btnA_pressed, bool btnB_pressed, bool btnC_pressed);
+    void update(bool btnA_pressed, bool btnB_pressed, bool btnC_pressed); // Call this every frame to update animation states
 
     // Draws the current state of the slot machine onto the provided canvas.
     // transparent_color is used for pushImage transparency (e.g., TFT_WHITE).
@@ -48,6 +64,10 @@ public:
     bool is_any_column_stopping() const; // Checks if any column is in stopping animation
     bool is_any_column_spinning() const; // Checks if any column is currently spinning or in stopping animation
     bool is_column_spinning(int col_index) const; // Checks if a specific column is spinning or stopping
+
+    unsigned long get_last_payout() const { return last_payout; }
+    unsigned long get_balance() const { return balance; }
+
 
 private:
     // Stores the symbols currently in or entering the viewport for each column.
@@ -63,6 +83,12 @@ private:
     int num_symbol_types_count;
     int symbol_tile_width;
     int symbol_tile_height;
+    unsigned long last_draw = 0;
+    unsigned long last_payout = 0;
+    unsigned long last_spin = 0;
+    unsigned long last_spin_stop = 0;
+    unsigned long balance = 100;
+    bool is_auto_spin = false;
 
     int column_vertical_offset[GRID_WIDTH]; // Vertical pixel offset for each column (0 to symbol_tile_height-1)
     // Animation state per column
@@ -81,10 +107,13 @@ private:
     static const int SPIN_SPEED_PIXELS_PER_UPDATE = 14; // Pixels to scroll per update() call
     static const int STOPPING_ANIMATION_DURATION_UPDATES = 45; // How many update() calls the "stopping" phase lasts before snapping
     static const int UPDATES_PER_WIN_HIGLIGHT = 30;
+    static const int MS_TO_AUTO_STOP_SPIN = 900;
+    static const int MS_TO_AUTO_SPIN = 1800;
 
     void initialize_grid_randomly(); // Sets initial random symbols on the grid
     void set_column_to_final_state(int col_index, const int final_symbols[GRID_HEIGHT]); // Helper to set a column to its target symbols
     int select_weighted_symbol();
+    void draw_weights_table(M5Canvas& canvas);
 };
 
 #endif // SLOT_MACHINE_H

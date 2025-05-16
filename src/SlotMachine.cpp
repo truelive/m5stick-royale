@@ -1,5 +1,24 @@
 #include "SlotMachine.h"
 
+SlotMachine::SlotMachine(const Parameters& params)
+        : symbols_data_ptr(params.symbol_pixel_data),
+          symbols_weight_ptr(params.symbol_weight_data),
+          slot_payout_counts(params.slot_payout_counts),
+          slot_payout(params.slot_payout),
+          num_symbol_types_count(params.num_types),
+          symbol_tile_width(params.sym_w),
+          symbol_tile_height(params.sym_h) {
+        initialize_grid_randomly();
+        animation_win_highlight_update_counter = 0;
+        animation_win_highlight_update_flip = false;
+        for (int i = 0; i < GRID_WIDTH; ++i) {
+            column_vertical_offset[i] = 0;
+            column_is_actively_spinning[i] = false;
+            column_is_stopping_animation[i] = false;
+            column_stop_animation_progress[i] = 0;
+            // column_target_symbols will be filled when stop_column_on is called
+        }
+    }
 // Constructor
 SlotMachine::SlotMachine(const uint16_t** symbol_pixel_data, const uint16_t* symbol_weight_data, const int* slot_payout_counts, const int (*slot_payout)[4], int num_types, int sym_w, int sym_h)
     : symbols_data_ptr(symbol_pixel_data),
@@ -111,7 +130,53 @@ void SlotMachine::set_column_to_final_state(int col_index, const int final_symbo
     }
 }
 
-void SlotMachine::update() {
+void SlotMachine::update_controls(bool btnA_pressed, bool btnB_pressed, bool btnC_pressed) {
+  unsigned long tick = millis(); // Get the current heartbeat value
+  bool is_any_column_spinns = is_any_column_spinning();
+  bool is_any_column_stopps = is_any_column_stopping();
+
+  if (btnA_pressed && !is_auto_spin)
+  {
+    if (is_any_column_spinns)
+    {
+      // If it's spinning, let's stop it with random symbols
+      last_spin_stop = tick;
+      stop_all_columns_with_weighted_random_result();
+    }
+    else
+    {
+      // If it's not spinning, let's start spinning all columns
+      balance--;
+      last_spin = tick;
+      spin_all_columns();
+    }
+  }
+  if (!is_payout_calculated() && !is_any_column_spinns)
+  {
+    last_payout = calculate_payout();
+    balance += last_payout;
+  }
+
+  if (btnB_pressed)
+  {
+    is_auto_spin = !is_auto_spin;
+  }
+  if (is_auto_spin && !is_any_column_spinns && !is_any_column_stopps && tick - last_spin_stop > MS_TO_AUTO_SPIN)
+  {
+    balance--;
+    last_spin = tick;
+    spin_all_columns();
+  }
+  if (tick - last_spin > MS_TO_AUTO_STOP_SPIN && is_any_column_spinns && !is_any_column_stopps)
+  {
+    last_spin_stop = tick;
+    stop_all_columns_with_weighted_random_result();
+  }
+}
+
+void SlotMachine::update(bool btnA_pressed, bool btnB_pressed, bool btnC_pressed) {
+    update_controls(btnA_pressed, btnB_pressed, btnC_pressed);
+
     animation_win_highlight_update_counter = (animation_win_highlight_update_counter + 1) % UPDATES_PER_WIN_HIGLIGHT;
     if (animation_win_highlight_update_counter == 0) {
         animation_win_highlight_update_flip = !animation_win_highlight_update_flip;
@@ -178,6 +243,54 @@ void SlotMachine::draw(M5Canvas& canvas, int top_left_x, int top_left_y, uint16_
             }
         }
     }
+    draw_weights_table(canvas);
+}
+
+void SlotMachine::draw_weights_table(M5Canvas& canvas)
+{
+  int x = canvas.width() / 2 - 7;
+  int y = 0;
+  int cell_width = 25;
+  int cell_height = 15;
+  canvas.setTextSize(1);
+  canvas.setFont(&fonts::Font0);
+
+  canvas.setTextColor(TFT_BLACK, 0xfdcf);
+  canvas.setTextDatum(MC_DATUM);
+  for (int i = -1; i < num_symbol_types_count; i++)
+  {
+    if (i == -1)
+    {
+      for (int j = 0; j < 4; j++)
+      {
+        canvas.drawString(String(slot_payout_counts[j]), x + cell_width / 2, y + cell_height / 2);
+        x += cell_width;
+      }
+      x = canvas.width() / 2 - 7;
+      y += cell_height;
+      continue;
+    }
+    if (i == 1 || i == 3 || i == 4 || i == 5)
+    {
+      continue;
+    }
+    for (int j = 0; j < 4; j++)
+    {
+      canvas.drawRect(x, y, cell_width, cell_height, TFT_BLACK);
+      canvas.drawString(String(slot_payout[i][j]), x + cell_width / 2, y + cell_height / 2);
+      x += cell_width;
+    }
+    canvas.pushImage(x, y, symbol_tile_width, symbol_tile_height, symbols_data_ptr[i], TFT_WHITE);
+    x = canvas.width() / 2 - 7;
+    y += cell_height;
+  }
+  canvas.pushImage(x, y, symbol_tile_width, symbol_tile_height, symbols_data_ptr[1], TFT_WHITE);
+  x += cell_width * 2;
+  canvas.drawString(String(slot_payout_counts[0]) + ":" + String(slot_payout[1][0]) + " " + String(slot_payout_counts[1]) + ":" + String(slot_payout[1][1]),
+                         x + cell_width / 2, y + cell_height / 2);
+  y += cell_height;
+  canvas.drawString(String(slot_payout_counts[2]) + ":" + String(slot_payout[1][2]) + " " + String(slot_payout_counts[3]) + ":" + String(slot_payout[1][3]),
+                         x + cell_width / 2, y + cell_height / 2);
 }
 
 bool SlotMachine::is_payout_calculated() const {
