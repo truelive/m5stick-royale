@@ -1,6 +1,8 @@
 #include <M5Unified.h> // Make the M5Unified library available to your program.
 #include "assets/assets.h"
 #include "SlotMachine.h"
+#include "MainMenu.h"
+
 
 // global variables (define variables to be used throughout the program)
 #define MS_PER_FRAME 16
@@ -18,6 +20,7 @@ auto bg_color = 0xfdca;
 const int NUM_SYMBOL_TYPES = 8; // Or calculate from slot_symbols array size
 
 SlotMachine *mySlotMachine;
+MainMenu *myMainMenu;
 
 // setup function is executed only once at startup.
 // This function mainly describes the initialization process.
@@ -50,6 +53,8 @@ void setup()
     SYM_HEIGHT
   };
   mySlotMachine = new SlotMachine(params);
+  myMainMenu = new MainMenu();
+  myMainMenu->setSlotMachine(mySlotMachine);
 }
 
 // loop function is executed repeatedly for as long as it is running.
@@ -64,70 +69,14 @@ void loop()
   //count++;
   M5.update();
   last_draw = tick;
-  mySlotMachine->update(M5.BtnA.wasPressed(), M5.BtnB.wasPressed(), M5.BtnC.wasPressed()); // Update animation logic
-  draw_status_bar(mySlotMachine->get_balance(), mySlotMachine->get_last_payout());
+  myMainMenu->update(M5.BtnA.wasPressed(), M5.BtnB.wasPressed(), M5.BtnPWR.wasPressed()); // Update animation logic
   main_canvas.fillRect(0, 0, main_canvas.width(), main_canvas.height(), bg_color); // Example clear
-  mySlotMachine->draw(main_canvas, 0, 0, TFT_WHITE);                               // Draw the slot machine at top-left of main_canvas
+  myMainMenu->draw(status_bar, main_canvas, 0, 0, TFT_WHITE);                             // Draw the slot machine at top-left of main_canvas
   //sub_canvas.pushRotateZoom(count*0.8f, 1.0f, 1.0f, TFT_PINK);
 
 
   M5.Display.startWrite();
   status_bar.pushSprite(0, 0);
-  main_canvas.pushSprite(3, status_bar.height() + 3);
+  main_canvas.pushSprite(0, status_bar.height());
   M5.Display.endWrite();
-}
-
-void draw_status_bar(unsigned long balance, int last_payout)
-{
-  char hello[100];
-  snprintf(hello, sizeof(hello), "Balance: %d, Payout: %d", balance, last_payout);
-  status_bar.fillRect(0, 0, status_bar.width(), status_bar.height(), bg_color);
-  status_bar.drawString(hello, 0, 0);
-}
-
-void draw_weights_table()
-{
-  int x = main_canvas.width() / 2 - 7;
-  int y = 0;
-  int cell_width = 25;
-  int cell_height = 15;
-  main_canvas.setTextSize(1);
-  main_canvas.setFont(&fonts::Font0);
-
-  main_canvas.setTextColor(TFT_BLACK, 0xfdcf);
-  main_canvas.setTextDatum(MC_DATUM);
-  for (int i = -1; i < NUM_SYMBOL_TYPES; i++)
-  {
-    if (i == -1)
-    {
-      for (int j = 0; j < 4; j++)
-      {
-        main_canvas.drawString(String(slot_payout_counts[j]), x + cell_width / 2, y + cell_height / 2);
-        x += cell_width;
-      }
-      x = main_canvas.width() / 2 - 7;
-      y += cell_height;
-      continue;
-    }
-    if (i == 1 || i == 3 || i == 4 || i == 5)
-    {
-      continue;
-    }
-    for (int j = 0; j < 4; j++)
-    {
-      main_canvas.drawRect(x, y, cell_width, cell_height, TFT_BLACK);
-      main_canvas.drawString(String(slot_payout[i][j]), x + cell_width / 2, y + cell_height / 2);
-      x += cell_width;
-    }
-    main_canvas.pushImage(x, y, SYM_WIDTH, SYM_HEIGHT, slot_symbols[i], TFT_WHITE);
-    x = main_canvas.width() / 2 - 7;
-    y += cell_height;
-  }
-  main_canvas.pushImage(x, y, SYM_WIDTH, SYM_HEIGHT, slot_symbols[1], TFT_WHITE);
-  x += cell_width * 2;
-  main_canvas.drawString(String(slot_payout_counts[0]) + ":" + String(slot_payout[1][0]) + " " + String(slot_payout_counts[1]) + ":" + String(slot_payout[1][1]),
-                         x + cell_width / 2, y + cell_height / 2);
-  y += cell_height;
-  main_canvas.drawString(String(slot_payout_counts[2]) + ":" + String(slot_payout[1][2]) + " " + String(slot_payout_counts[3]) + ":" + String(slot_payout[1][3]),
-                         x + cell_width / 2, y + cell_height / 2);
 }
