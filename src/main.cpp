@@ -60,6 +60,17 @@ void setup()
       DICE_HEIGHT,
       bg_color};
   myMainMenu->setDiceMachine(new DiceMachine(dice_params));
+
+  RouletteMachine::Parameters roulette_params = {
+      &sub_canvas,
+      roulette_numbers,
+      roulette_degrees,
+      NUM_ROULETTE_NUMBERS,
+      ROULETTE_WIDTH,
+      ROULETTE_HEIGHT,
+      bg_color
+  };
+  myMainMenu->setRouletteMachine(new RouletteMachine(roulette_params));
 }
 
 // loop function is executed repeatedly for as long as it is running.

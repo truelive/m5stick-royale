@@ -18,6 +18,12 @@
 
 #include "roulette.h"
 
+
+#define ROULETTE_WIDTH 111
+#define ROULETTE_HEIGHT 111
+
+#define NUM_ROULETTE_NUMBERS 19
+
 const uint16_t roulette_numbers[] = {
 	0,15,4,2,17,6,13,11,8,10,5,16,1,14,9,18,7,12,3
 };

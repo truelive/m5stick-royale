@@ -3,6 +3,8 @@
 #include <M5Unified.h> // Required for M5Canvas and random()
 #include "SlotMachine.h"
 #include "DiceMachine.h"
+#include "RouletteMachine.h"
+
 
 #define NUM_MENU_ITEMS 3
 
@@ -22,6 +24,7 @@ public:
 
     void setSlotMachine(SlotMachine *mySlotMachine);
     void setDiceMachine(DiceMachine *myDice);
+    void setRouletteMachine(RouletteMachine *myRoulette);
     void draw_slot_status_bar(M5Canvas &status_bar, unsigned long balance, int last_payout);
     void draw_menu_status_bar(M5Canvas &status_bar);
     void draw(M5Canvas &status_bar, M5Canvas &canvas, int top_left_x, int top_left_y, uint16_t transparent_color);
@@ -30,6 +33,7 @@ public:
 private:
     SlotMachine *slotMachine;
     DiceMachine *diceMachine;
+    RouletteMachine *rouletteMachine;
     Mode selected_mode;
     int selected_menu_item;
     static const char* menu_item_names[NUM_MENU_ITEMS];
