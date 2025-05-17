@@ -40,8 +40,8 @@ void MainMenu::draw(M5Canvas &status_bar, M5Canvas &canvas, int top_left_x, int 
         return;
     }
     if (selected_mode == Dice) {
-        // draw a status bar
-        //slotMachine->draw(canvas, top_left_x, top_left_y, transparent_color);
+        draw_slot_status_bar(status_bar, diceMachine->get_balance(), diceMachine->get_last_payout());
+        diceMachine->draw(canvas, top_left_x, top_left_y, transparent_color);
         return;
     }
     if (selected_mode == Menu) {
@@ -75,13 +75,28 @@ void MainMenu::update(bool btnA_pressed, bool btnB_pressed, bool btnC_pressed)
         return;
     }
     if (selected_mode == Dice) {
-        //slotMachine->draw(canvas, top_left_x, top_left_y, transparent_color);
+        diceMachine->update(btnA_pressed, btnB_pressed, btnC_pressed);
         return;
     }
     if (selected_mode == Menu) {
         if (btnA_pressed) {
             // change the mode to selected and forward the input
-            selected_mode = (Mode)((int)selected_mode + 1);
+            switch (selected_menu_item)
+            {
+            case 1:
+                selected_mode = Dice;
+                break;
+            case 2:
+                selected_mode = Roulette;
+                break;
+            case 0:
+                selected_mode = Slot;
+                break;
+            
+            default:
+                selected_mode = Menu;
+                break;
+            }
 
         }
         if (btnB_pressed) {
@@ -93,4 +108,9 @@ void MainMenu::update(bool btnA_pressed, bool btnB_pressed, bool btnC_pressed)
 void MainMenu::setSlotMachine(SlotMachine *mySlotMachine)
 {
     slotMachine = mySlotMachine;
+}
+
+void MainMenu::setDiceMachine(DiceMachine *myDice)
+{
+    diceMachine = myDice;
 }

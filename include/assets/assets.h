@@ -82,7 +82,7 @@ const int slot_payout[][4] = {
     /* melon (7)  */ {  0,   0, 	 0,		2	 	}
 };
 
-#define DICE_WIDTH 22
+#define DICE_WIDTH 35
 #define DICE_HEIGHT 35
 
 const uint16_t *dice_sides[] = {

@@ -3,7 +3,6 @@
 #include "SlotMachine.h"
 #include "MainMenu.h"
 
-
 // global variables (define variables to be used throughout the program)
 #define MS_PER_FRAME 16
 #define MS_TO_AUTO_STOP_SPIN 900
@@ -38,23 +37,29 @@ void setup()
   status_bar.setFont(font);
 
   main_canvas.createSprite(M5.Display.width(), M5.Display.height() - font->height);
-  sub_canvas.createSprite(111,111);
+  sub_canvas.createSprite(111, 111);
   sub_canvas.fillSprite(TFT_PINK);
   sub_canvas.pushImage(0, 0, 111, 111, roulette, TFT_WHITE);
 
   // In your setup() function:
-  SlotMachine::Parameters params = {
-    slot_symbols,
-    slot_weights,
-    slot_payout_counts,
-    slot_payout,
-    NUM_SYMBOL_TYPES,
-    SYM_WIDTH,
-    SYM_HEIGHT
-  };
-  mySlotMachine = new SlotMachine(params);
   myMainMenu = new MainMenu();
-  myMainMenu->setSlotMachine(mySlotMachine);
+  SlotMachine::Parameters params = {
+      slot_symbols,
+      slot_weights,
+      slot_payout_counts,
+      slot_payout,
+      NUM_SYMBOL_TYPES,
+      SYM_WIDTH,
+      SYM_HEIGHT};
+  myMainMenu->setSlotMachine(new SlotMachine(params));
+
+  DiceMachine::Parameters dice_params = {
+      dice_sides,
+      6,
+      DICE_WIDTH,
+      DICE_HEIGHT,
+      bg_color};
+  myMainMenu->setDiceMachine(new DiceMachine(dice_params));
 }
 
 // loop function is executed repeatedly for as long as it is running.
@@ -66,14 +71,13 @@ void loop()
   {
     return;
   }
-  //count++;
+  // count++;
   M5.update();
   last_draw = tick;
   myMainMenu->update(M5.BtnA.wasPressed(), M5.BtnB.wasPressed(), M5.BtnPWR.wasPressed()); // Update animation logic
-  main_canvas.fillRect(0, 0, main_canvas.width(), main_canvas.height(), bg_color); // Example clear
+  main_canvas.fillRect(0, 0, main_canvas.width(), main_canvas.height(), bg_color);        // Example clear
   myMainMenu->draw(status_bar, main_canvas, 0, 0, TFT_WHITE);                             // Draw the slot machine at top-left of main_canvas
-  //sub_canvas.pushRotateZoom(count*0.8f, 1.0f, 1.0f, TFT_PINK);
-
+  // sub_canvas.pushRotateZoom(count*0.8f, 1.0f, 1.0f, TFT_PINK);
 
   M5.Display.startWrite();
   status_bar.pushSprite(0, 0);
