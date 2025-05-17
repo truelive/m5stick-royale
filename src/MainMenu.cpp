@@ -38,7 +38,7 @@ void MainMenu::draw(M5Canvas &status_bar, M5Canvas &canvas, int top_left_x, int 
     }
     if (selected_mode == Roulette)
     {
-        draw_slot_status_bar(status_bar, slotMachine->get_balance(), slotMachine->get_last_payout());
+        draw_slot_status_bar(status_bar, rouletteMachine->get_balance(), rouletteMachine->get_last_payout());
         rouletteMachine->draw(canvas, top_left_x, top_left_y, transparent_color);
         return;
     }

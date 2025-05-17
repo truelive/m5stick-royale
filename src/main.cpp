@@ -68,7 +68,9 @@ void setup()
       NUM_ROULETTE_NUMBERS,
       ROULETTE_WIDTH,
       ROULETTE_HEIGHT,
-      bg_color
+      bg_color,
+      1.6f, // ROTTATION_PER_UPDATE
+      (6.0f / 360.0f) * M_PI, // BALL_INITIAL_RADIAN_PER_UPDATE
   };
   myMainMenu->setRouletteMachine(new RouletteMachine(roulette_params));
 }
